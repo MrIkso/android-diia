@@ -1,0 +1,40 @@
+name: Android CI
+
+on:
+  # push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build debug apk
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.12.1
+        with:
+          access_token: ${{ github.token }}
+
+      - uses: actions/checkout@v2
+    
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          check-latest: true
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build debug apk
+        run: ./gradlew :opensource:assembleGplayDebug
+
+      - name: Upload debug apk
+        uses: actions/upload-artifact@v2
+        if: ${{ !github.head_ref }}
+        with:
+          name: apk-debug
+          path: opensource/build/outputs/apk
+          
